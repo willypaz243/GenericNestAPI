@@ -1,0 +1,21 @@
+services:
+  postgresql:
+    image: postgres:latest
+    container_name: postgresql_container
+    environment:
+      POSTGRES_DB: agents_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    container_name: adminer_container
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgresql
+volumes:
+  postgres_data:
