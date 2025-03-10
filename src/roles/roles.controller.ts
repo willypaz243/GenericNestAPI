@@ -7,13 +7,19 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { SetResourceName } from './decorators/resource.decorator.';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { FindRolesQueryDto } from './dto/find-roles-query.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { ResourceNames } from './models/resource.model';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
+@SetResourceName(ResourceNames.ROLE)
+@UseGuards(AuthGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

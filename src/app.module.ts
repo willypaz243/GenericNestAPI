@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { getTypeOrmConfig } from './database/database.config';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
     TypeOrmModule.forRoot(getTypeOrmConfig()),
     UsersModule,
     RolesModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
