@@ -9,6 +9,12 @@ import {
 } from 'typeorm';
 import { Role } from '../../roles/entities/role.entity';
 
+export enum UserStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -25,6 +31,9 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ default: UserStatus.PENDING })
+  status: UserStatus;
 
   @ManyToOne(() => Role, (role) => role, {
     onDelete: 'SET NULL',

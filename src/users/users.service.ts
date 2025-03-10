@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUsersQueryDto } from './dto/find-users-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { User, UserStatus } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,8 +12,24 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  private generateTempPassword(): string {
+    // Implement a secure method to generate a temporary password
+    const length = 12;
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const newUser = this.userRepository.create(createUserDto);
+    if (!newUser.password) {
+      newUser.password = this.generateTempPassword();
+    }
     return this.userRepository.save(newUser);
   }
 
@@ -32,8 +48,12 @@ export class UsersService {
     return { users, total };
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOneBy({ id });
+  async findOne(id: number): Promise<User | null> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) return null;
+    if (user.status === UserStatus.PENDING) return user;
+
+    return { ...user, password: '**********' };
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

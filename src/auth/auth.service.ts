@@ -1,8 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
+import { User, UserStatus } from '../users/entities/user.entity';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LogInDto } from './dto/login.dto';
 import { PayloadDto, TokenDto } from './dto/token.dto';
 
@@ -17,9 +19,12 @@ export class AuthService {
     const user = await this.usersRepository.findOne({
       where: { email: loginDto.email },
     });
-    if (user && user.password === loginDto.password) {
-      return user;
-    }
+    if (!user) throw new UnauthorizedException('User not found');
+    const isMatch =
+      user.status === UserStatus.PENDING
+        ? user.password === loginDto.password
+        : await bcrypt.compare(loginDto.password, user.password);
+    if (isMatch) return user;
     throw new UnauthorizedException('Invalid credentials');
   }
 
@@ -52,5 +57,27 @@ export class AuthService {
   async login(loginDto: LogInDto): Promise<TokenDto> {
     const user = await this.validateUser(loginDto);
     return this.generateToken(user);
+  }
+
+  async changePassword(user: User, changePasswordDto: ChangePasswordDto) {
+    let isMatch: boolean;
+    if (user.status === UserStatus.PENDING) {
+      isMatch = user.password === changePasswordDto.oldPassword;
+      if (isMatch) user.status = UserStatus.ACTIVE;
+    } else {
+      isMatch = await bcrypt.compare(
+        changePasswordDto.oldPassword,
+        user.password,
+      );
+    }
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid old password');
+    }
+
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    user.password = hashedPassword;
+    await this.usersRepository.save(user);
+    return { message: 'Password changed successfully' };
   }
 }
