@@ -13,18 +13,22 @@ export default class CreateSuperUserSeed implements Seeder {
     const role = roleRepository.create({
       name: 'super_admin',
       description: 'Super Admin Role',
-      resources: Object.values(ResourceNames).map((name) =>
-        resourceRepository.create({
-          name,
-          description: `Access to ${name} resource`,
-          readAccess: true,
-          writeAccess: true,
-          deleteAccess: true,
-        }),
-      ),
+      resources: Object.values(ResourceNames)
+        .filter((name) => !!name)
+        .map((name) =>
+          resourceRepository.create({
+            name,
+            description: `Access to ${name} resource`,
+            readAccess: true,
+            writeAccess: true,
+            deleteAccess: true,
+          }),
+        ),
     });
 
-    await roleRepository.upsert(role, ['name']);
+    await roleRepository.save(role).catch(() => {
+      console.error('This role already exists:');
+    });
     const user = repository.create({
       firstName: 'John',
       lastName: 'Doe',

@@ -11,7 +11,7 @@ export const getTypeOrmConfig: () => DataSourceOptions = () => {
     password: process.env.TYPEORM_PASSWORD || 'password',
     database: process.env.TYPEORM_DATABASE || 'agents_db',
     entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],
-    migrations: [__dirname + '/migrations/**/*.ts'],
+    migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     migrationsTableName: 'typeorm_migrations',
     synchronize: false,
     logging: false,
