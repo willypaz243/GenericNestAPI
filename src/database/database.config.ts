@@ -5,11 +5,11 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 export const getTypeOrmConfig: () => DataSourceOptions = () => {
   const typeOrmConfig: DataSourceOptions = {
     type: 'postgres',
-    host: process.env.MYSQL_HOST || 'localhost',
+    host: process.env.TYPEORM_HOST || 'localhost',
     port: 5432,
-    username: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || 'password',
-    database: process.env.MYSQL_DATABASE || 'agents_db',
+    username: process.env.TYPEORM_USER || 'root',
+    password: process.env.TYPEORM_PASSWORD || 'password',
+    database: process.env.TYPEORM_DATABASE || 'agents_db',
     entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],
     migrations: [__dirname + '/migrations/**/*.ts'],
     migrationsTableName: 'typeorm_migrations',
