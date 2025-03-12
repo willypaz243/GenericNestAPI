@@ -41,11 +41,8 @@ export class UsersService {
         search: `%${search}%`,
       });
     }
-    const [users, total] = await queryBuilder
-      .skip(offset)
-      .take(limit)
-      .getManyAndCount();
-    return { users, total };
+    const users = await queryBuilder.skip(offset).take(limit).getMany();
+    return users;
   }
 
   async findOne(id: number): Promise<User | null> {
