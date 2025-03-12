@@ -22,7 +22,8 @@
     "migrations:generate": "pnpm typeorm migration:generate ./src/database/migrations/migration",
     "migrations:run": "pnpm typeorm migration:run",
     "migrations:revert": "pnpm typeorm migration:revert",
-    "migrations:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration"
+    "migrations:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration",
+    "seed:run": "npx ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d src/database/database.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.0.1",
@@ -40,6 +41,7 @@
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.1",
     "typeorm": "0.3.21",
+    "typeorm-extension": "3.7.0",
     "typeorm-naming-strategies": "4.1.0"
   },
   "devDependencies": {
@@ -90,10 +92,14 @@
   "pnpm": {
     "ignoredBuiltDependencies": [
       "@nestjs/core",
-      "@swc/core"
+      "@swc/core",
+      "bcrypt",
+      "core-js"
     ],
     "onlyBuiltDependencies": [
-      "@nestjs/core"
+      "@nestjs/core",
+      "bcrypt",
+      "core-js"
     ]
   }
 }

@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Request } from 'express';
 
 import { Reflector } from '@nestjs/core';
@@ -18,38 +18,43 @@ import { PayloadDto } from '../dto/token.dto';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private reflector: Reflector,
+    private jwtService: JwtService,
+    @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
     const method = request.method;
-    const ResourceNames: string | undefined = this.reflector.get(
+    const ResourceNames = this.reflector.getAllAndOverride<string | undefined>(
       RESOURCE_KEY,
-      context.getHandler(),
+      [context.getHandler(), context.getClass()],
     );
 
     if (!token) {
       throw new UnauthorizedException();
     }
+    let payload: PayloadDto;
     try {
-      const payload = await this.jwtService.verifyAsync<PayloadDto>(token, {
+      payload = await this.jwtService.verifyAsync<PayloadDto>(token, {
         secret: process.env.JWT_SECRET,
       });
-
-      const user = await this.userRepository.findOneBy({ id: payload.sub });
-
-      if (!user) throw new UnauthorizedException();
-
-      if (ResourceNames) this.roleValidation(user, ResourceNames, method);
-
-      request['user'] = user;
-    } catch {
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      }
       throw new UnauthorizedException();
     }
+
+    const user = await this.userRepository.findOneBy({ id: payload.sub });
+
+    if (!user) throw new UnauthorizedException();
+
+    if (ResourceNames) this.roleValidation(user, ResourceNames, method);
+
+    request['user'] = user;
+
     return true;
   }
 

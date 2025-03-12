@@ -1,12 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Role } from './role.entity';
 
 @Entity()
 export class Resource {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn({ name: 'role_id' })
+  roleId: number;
 
-  @Column()
+  @PrimaryColumn()
   name: string;
 
   @Column()

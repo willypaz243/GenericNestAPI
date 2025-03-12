@@ -6,12 +6,15 @@ export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
   description: string;
 
-  @OneToMany(() => Resource, (resource) => resource.role, { eager: true })
+  @OneToMany(() => Resource, (resource) => resource.role, {
+    cascade: true,
+    eager: true,
+  })
   resources: Resource[];
 }

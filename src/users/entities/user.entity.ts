@@ -26,7 +26,7 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
@@ -38,6 +38,7 @@ export class User {
   @ManyToOne(() => Role, (role) => role, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
+    eager: true,
   })
   role: Role;
 

@@ -25,14 +25,17 @@ export class AuthService {
         ? user.password === loginDto.password
         : await bcrypt.compare(loginDto.password, user.password);
     if (isMatch) return user;
-    throw new UnauthorizedException('Invalid credentials');
+    throw new UnauthorizedException('User not found');
   }
 
   private async generateToken(user: User): Promise<TokenDto> {
     const payload = { sub: user.id, email: user.email };
-    const accessToken = await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+    });
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '7d',
+      secret: process.env.JWT_SECRET,
     });
     return { accessToken, refreshToken };
   }
@@ -47,7 +50,9 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('Invalid token');
       }
-      const newTokens = await this.jwtService.signAsync(payload);
+      const newTokens = await this.jwtService.signAsync(payload, {
+        secret: process.env.JWT_SECRET,
+      });
       return { accessToken: newTokens, refreshToken };
     } catch {
       throw new UnauthorizedException('Invalid token');
