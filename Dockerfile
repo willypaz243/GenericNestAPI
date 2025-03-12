@@ -1,33 +1,44 @@
-FROM debian:stable-slim
+# Stage 1: Base image setup
+FROM debian:stable-slim AS base
 
-WORKDIR /usr/src/app
-
+# Install necessary dependencies
 RUN apt-get update \
     && apt-get install -y \
     curl \
     ca-certificates \
     --no-install-recommends
 
-# bash will load volta() function via .bashrc 
-# using $VOLTA_HOME/load.sh
+# Set up bash environment for Volta
 SHELL ["/bin/bash", "-c"]
-
-ENV BASH_ENV ~/.bashrc
-ENV VOLTA_HOME /root/.volta
-ENV PATH $VOLTA_HOME/bin:$PATH
+ENV BASH_ENV=~/.bashrc
+ENV VOLTA_HOME=/root/.volta
+ENV PATH=$VOLTA_HOME/bin:$PATH
 RUN curl https://get.volta.sh | bash
-
-
-
-RUN volta install node@lts
+RUN volta install node@22.14.0
 RUN volta install pnpm@latest
 
-COPY . .
+
+# Stage 2: Builder stage
+FROM base AS builder
+
+WORKDIR /usr/src/app
+
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+COPY tsconfig*.json ./
+COPY src ./src
 
 RUN pnpm install
-
-EXPOSE 3000
-
 RUN pnpm build
+# RUN pnpm migrations:runjs
 
-CMD pnpm migrations:run && node dist/main
+# Stage 3: Runner stage
+FROM base AS runner
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY package.json .
+
+CMD ls -la && pnpm migrations:runjs && node dist/main

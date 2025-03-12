@@ -19,11 +19,14 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource=src/database/database.config.ts",
+    "typeormjs": " node ./node_modules/typeorm/cli.js -d dist/database/database.config.js",
     "migrations:generate": "pnpm typeorm migration:generate ./src/database/migrations/migration",
     "migrations:run": "pnpm typeorm migration:run",
+    "migrations:runjs": "pnpm typeormjs migration:run",
     "migrations:revert": "pnpm typeorm migration:revert",
     "migrations:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration",
-    "seed:run": "npx ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d src/database/database.config.ts"
+    "seed:run": "npx ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d src/database/database.config.ts",
+    "seed:runjs": "node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d dist/database/database.config.js"
   },
   "dependencies": {
     "@nestjs/common": "11.0.1",
@@ -103,5 +106,9 @@
       "bcrypt",
       "core-js"
     ]
+  },
+  "packageManager": "pnpm@10.6.2+sha512.47870716bea1572b53df34ad8647b42962bc790ce2bf4562ba0f643237d7302a3d6a8ecef9e4bdfc01d23af1969aa90485d4cebb0b9638fa5ef1daef656f6c1b",
+  "volta": {
+    "node": "22.14.0"
   }
 }
